@@ -2,7 +2,7 @@
     "name": "sophokles/framework",
     "description": "Sophokles Framework",
     "type": "application",
-    "license": "LGPL-3.0-only / LGPL-3.0-or-later",
+    "license": "LGPL-3.0-or-later",
     "authors": [
       {
         "name": "Bernd Wagner",
