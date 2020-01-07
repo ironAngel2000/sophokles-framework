@@ -1,0 +1,33 @@
+{
+    "name": "sophokles/framework",
+    "description": "Sophokles Framework",
+    "type": "application",
+    "license": "LGPL-3.0-only / LGPL-3.0-or-later",
+    "authors": [
+      {
+        "name": "Bernd Wagner",
+        "email": "iron_angel2000@yahoo.de"
+      }
+    ],
+    "version" : "1.0.0",
+    "require": {
+      "php": ">=7.1, <7.4",
+      "twig/twig": "^2.0"
+    },
+    "autoload":{
+        "psr-4":{
+          "Sophokles\\Controller\\" : "src/controller/",
+          "Sophokles\\Database\\" : "src/database/",
+          "Sophokles\\Dataset\\" : "src/dataset/",
+          "Sophokles\\Module\\" : "src/module/",
+          "Sophokles\\Sophokles\\" : "src/sophokles/",
+          "Sophokles\\Sophokles\\Helper\\" : "src/sophokles/helper/",
+          "System\\Config\\" : "system/config/",
+          "System\\Traits\\" : "system/traits/",
+          "Local\\Traits\\" : "local/traits/"
+        }
+      }
+}
+  
+  
+  
