@@ -21,10 +21,7 @@
           "Sophokles\\Dataset\\" : "src/dataset/",
           "Sophokles\\Module\\" : "src/module/",
           "Sophokles\\Sophokles\\" : "src/sophokles/",
-          "Sophokles\\Sophokles\\Helper\\" : "src/sophokles/helper/",
-          "System\\Config\\" : "system/config/",
-          "System\\Traits\\" : "system/traits/",
-          "Local\\Traits\\" : "local/traits/"
+          "Sophokles\\Sophokles\\Helper\\" : "src/sophokles/helper/"
         }
       }
 }
