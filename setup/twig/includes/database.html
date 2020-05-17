@@ -1,0 +1,93 @@
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h2>
+                Database
+            </h2>
+        </div>
+    </div>
+    <div class="row steps">
+        <div class="col">
+            <em>Step 1</em>
+        </div>
+        <div class="col">
+            <strong>Step 2</strong>
+        </div>
+        <div class="col">
+            Step 3
+        </div>
+        <div class="col">
+            finish
+        </div>
+    </div>
+    <div class="userentry">
+        <div class="row">
+            <div class="col">
+                <p>
+                    Please enter the access data for the mySQL database.
+                </p>
+            </div>
+        </div>
+    </div>
+    <form action="{{aktURL}}" method="POST" enctype="multipart/form-data">
+        <div class="userentry">
+            <div class="row justify-content-start">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <label for="dbHost">Host:</label>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <input type="text" name="dbHost" id="dbHost" placeholder="localhost" value="{{dbData.dbHost}}" />
+                </div>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <label for="dbUser">User:</label>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <input type="text" name="dbUser" id="dbUser" placeholder="" value="{{dbData.dbUser}}" />
+                </div>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <label for="dbPassword">Password:</label>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <input type="text" name="dbPassword" id="dbPassword" placeholder="" value="{{dbData.dbPassword}}" />
+                </div>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <label for="dbDatabase">Database:</label>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <input type="text" name="dbDatabase" id="dbDatabase" placeholder="" value="{{dbData.dbDatabase}}" />
+                </div>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <label for="dbPort">Port:</label>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <input type="text" name="dbPort" id="dbPort" placeholder="3306" value="{{dbData.dbPort}}" />
+                </div>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <label for="dbSocket">Socket:</label>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <input type="text" name="dbSocket" id="dbSocket" placeholder="" value="{{dbData.dbSocket}}" />
+                </div>
+            </div>
+        </div>
+        <div class="row buttons">
+            <div class="col-6 text-left">
+                <input class="btn btn-secondary" name="btsubmit" type="submit" value="<< back" />
+            </div>
+            <div class="col-6 text-right">
+                <input class="btn  btn-primary" name="btsubmit" type="submit" value="next >>" />
+            </div>
+        </div>
+        <input type="hidden" name="nxtstep" value="2" />
+    </form>
+</div>

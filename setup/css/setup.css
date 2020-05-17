@@ -1,0 +1,52 @@
+:root{
+    --font-color: #111117;
+    --bg-color: #fefefe;
+    --bg-header: #00008060;
+    --bg-entry: #ffe282;
+}
+html,
+body{
+    margin: 0;
+    padding: 0;
+    border: none;
+    width: 100%;
+    min-height: 100vh;
+}
+
+body{
+    font-size: 16px;
+    color: var(--font-color);
+    background-color: var(--bg-color);
+}
+
+header{
+    display: block;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    background-color: var(--bg-header);
+}
+
+h2{
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.steps{
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--font-color);
+}
+
+.steps em{
+    opacity: 0.5;
+}
+
+.userentry .row{
+    padding-top: 1em;
+    padding-bottom: 1em;
+    background-color: var(--bg-entry);
+}
+
+.buttons{
+    margin-top: 2rem;
+}
