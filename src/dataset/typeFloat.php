@@ -59,9 +59,7 @@ class typeFloat{
      * @return void
      */
     public function setVal($numval){
-
-        if($this->float) $this->value = (float) ($numval);
-        else $this->value = (int) ($numval);
+        $this->value = (float) ($numval);
     }
 
     /**
