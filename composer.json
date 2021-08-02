@@ -9,7 +9,7 @@
         "email": "iron_angel2000@yahoo.de"
       }
     ],
-    "version" : "1.0.5",
+    "version" : "1.0.6",
     "require": {
       "php": ">=7.1, <8",
       "twig/twig": "^2.0"
