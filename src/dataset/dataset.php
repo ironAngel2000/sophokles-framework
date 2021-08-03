@@ -174,22 +174,26 @@ abstract class dataset
     {
         $key = key($this->arrDbResult);
         foreach ($this->arrFields as $colName) {
-            $class = get_class($this->{$colName});
-            
-            if(stristr($class,'typeText')){
-                $this->arrDbResult[$key][$colName] = trim($this->arrDbResult[$key][$colName]);
-            }
-            if(stristr($class,'typeJson')){
-                $this->arrDbResult[$key][$colName] = trim($this->arrDbResult[$key][$colName]);
-            }
-            if(stristr($class,'typeInt')){
-                $this->arrDbResult[$key][$colName] = (int) ($this->arrDbResult[$key][$colName]);
-            }
-            if(stristr($class,'typeFloat')){
-                $this->arrDbResult[$key][$colName] = (float) ($this->arrDbResult[$key][$colName]);
-            }
+  
+            if(isset($this->arrDbResult[$key][$colName])){
 
-            $this->{$colName} = new $class($this->arrDbResult[$key][$colName]);
+                $class = get_class($this->{$colName});
+                
+                if(stristr($class,'typeText')){
+                    $this->arrDbResult[$key][$colName] = trim($this->arrDbResult[$key][$colName]);
+                }
+                if(stristr($class,'typeJson')){
+                    $this->arrDbResult[$key][$colName] = trim($this->arrDbResult[$key][$colName]);
+                }
+                if(stristr($class,'typeInt')){
+                    $this->arrDbResult[$key][$colName] = (int) ($this->arrDbResult[$key][$colName]);
+                }
+                if(stristr($class,'typeFloat')){
+                    $this->arrDbResult[$key][$colName] = (float) ($this->arrDbResult[$key][$colName]);
+                }
+
+                $this->{$colName} = new $class($this->arrDbResult[$key][$colName]);
+            }
         }
     }
 

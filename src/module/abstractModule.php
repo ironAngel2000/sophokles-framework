@@ -156,6 +156,10 @@ abstract class abstractModule
         $ret = [];
         $index = 0;
 
+        if(!is_array($arrParam)){
+            $arrParam = [];
+        }
+
         if ($this->objDataset->getEntriesbyParam($arrParam, $arrSort)) {
             do {
                 $useIndex = true;

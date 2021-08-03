@@ -9,10 +9,10 @@
         "email": "iron_angel2000@yahoo.de"
       }
     ],
-    "version" : "1.0.7",
+    "version" : "1.1.0",
     "require": {
       "php": ">=7.1, <8",
-      "twig/twig": "^2.0"
+      "twig/twig": "^3.0"
     },
     "autoload":{
         "psr-4":{
@@ -25,6 +25,3 @@
         }
       }
 }
-  
-  
-  
