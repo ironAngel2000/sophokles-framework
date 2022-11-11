@@ -1,0 +1,75 @@
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h2>
+                Summary
+            </h2>
+        </div>
+    </div>
+    <div class="row steps">
+        <div class="col">
+            <em>Step 1</em>
+        </div>
+        <div class="col">
+            <em>Step 2</em>
+        </div>
+        <div class="col">
+            <strong>Step 3</strong>
+        </div>
+        <div class="col">
+            finish
+        </div>
+    </div>
+    <div class="userentry">
+        <div class="row">
+            <div class="col">
+                <p>
+                    Check your entered data.
+                </p>
+            </div>
+        </div>
+    </div>
+    <form action="{{aktURL}}" method="POST" enctype="multipart/form-data">
+        <div class="userentry">
+            <div class="row justify-content-start">
+                <div class="col">
+                    <strong>Host:</strong>&nbsp;{{dbData.dbHost}}
+                </div>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col">
+                    <strong>User:</strong>&nbsp;{{dbData.dbUser}}
+                </div>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col">
+                    <strong>Password:</strong>&nbsp;{{dbData.dbPassword}}
+                </div>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col">
+                    <strong>Database:</strong>&nbsp;{{dbData.dbDatabase}}
+                </div>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col">
+                    <strong>Port:</strong>&nbsp;{{dbData.dbPort}}
+                </div>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col">
+                    <strong>Socket:</strong>&nbsp;{{dbData.dbSocket}}
+                </div>
+            </div>
+        </div>
+        <div class="row buttons">
+            <div class="col-6 text-left">
+                <input class="btn btn-secondary" name="btsubmit" type="submit" value="<< back" />
+            </div>
+            <div class="col-6 text-right">
+                <input class="btn btn-primary" name="btsubmit" type="submit" value="finish >>" />
+            </div>
+        </div>
+        <input type="hidden" name="nxtstep" value="3" />
+    </form>
+</div>
