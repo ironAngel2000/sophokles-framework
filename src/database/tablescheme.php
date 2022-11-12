@@ -29,12 +29,6 @@ final class tablescheme
     /** @var bool $primaryset */
     protected $primaryset;
 
-    /** @var array $primaryFields */
-    protected $primaryFields;
-
-    /** @var bool $isautoincrement */
-    protected $isautoincrement;
-
     /** @var string $databaseEngine */
     protected $databaseEngine;
 
@@ -71,7 +65,6 @@ final class tablescheme
 
         $this->primaryset = false;
         $this->primaryFields = [];
-        $this->isautoincrement = false;
 
         $this->addColumn('deleted', FieldType::INT)
             ->length(11)
@@ -222,27 +215,6 @@ final class tablescheme
     {
         return $this->arrKeys;
     }
-
-    /**
-     * Retrun the Array of primary Fields
-     *
-     * @return array
-     */
-    final public function getPrimaryFields()
-    {
-        return $this->primaryFields;
-    }
-
-    /**
-     * Retrun the status autoincrement
-     *
-     * @return bool
-     */
-    final public function isAutoincrement()
-    {
-        return $this->isautoincrement;
-    }
-
 
     /**
      * Database check if Table exists

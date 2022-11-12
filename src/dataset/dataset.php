@@ -15,6 +15,7 @@ use Sophokles\Database\statement;
 use Sophokles\Database\tablecolumn;
 use Sophokles\Database\tablescheme;
 use Sophokles\Database\query;
+use System\Config\db;
 
 /**
  * @property typeText $uniqueid
@@ -43,11 +44,23 @@ abstract class dataset
     /** @var sorting $sorting */
     protected $objSorting;
 
+    /** @var serviceWorker */
+    protected $objServiceWorker;
+
+    /** @var string */
+    protected $autoIncrementField = '';
+
+    /** @var array */
+    protected $primaryField = [];
+
     abstract protected function defineTableScheme();
 
     abstract protected function defineSorting();
 
     abstract protected function initClass();
+
+    /** @var bool */
+    public static $isSorting = false;
 
     /**
      * Constructor.
@@ -56,17 +69,22 @@ abstract class dataset
      */
     final public function __construct(private int $databasenr = 1)
     {
-        if($databasenr == 0) {
+        if ($databasenr == 0) {
             $this->databasenr = 1;
         }
 
         $this->objSorting = new sorting();
         $this->initClass();
+
         $this->__init();
+
+        if(method_exists($this,'abstractInit')){
+            $this->abstractInit();
+        }
 
     }
 
-    private function __init()
+    private function __init(): void
     {
         $this->defineSorting();
         $this->defineTableScheme();
@@ -96,6 +114,12 @@ abstract class dataset
                                 break;
                         }
                         $this->arrFields[] = $name;
+                        if ($objColumn->isAutoincrement()) {
+                            $this->autoIncrementField = $name;
+                            $this->primaryField[] = $name;
+                        } elseif ($objColumn->isPrimary()) {
+                            $this->primaryField[] = $name;
+                        }
                     }
                 }
             }
@@ -107,13 +131,23 @@ abstract class dataset
         if (isset($this->sorting)) {
             $this->sorting = clone $this->sorting;
         }
+        if (isset($this->objServiceWorker)) {
+            $this->objServiceWorker = clone $this->objServiceWorker;
+        }
         $this->objTableScheme = clone $this->objTableScheme;
 
         foreach ($this->arrFields as $name) {
-            $this->{$name} = clone $this->{$name};
+            if (is_object($this->{$name})) {
+                $this->{$name} = clone $this->{$name};
+            }
         }
 
         ++$this->cloneIndex;
+    }
+
+    public function addServiceWorker(serviceWorker $objServiceWorker)
+    {
+        $this->objServiceWorker = $objServiceWorker;
     }
 
     public function tableSchemeUpdate()
@@ -145,6 +179,9 @@ abstract class dataset
 
     protected function readDbResult(statement $objStatment)
     {
+        if ($this->objServiceWorker instanceof serviceWorker && dataset::$isSorting === false) {
+            $this->objServiceWorker->beforeQuery($this);
+        }
         $query = database::getQuery($this->databasenr);
         $pdo = $query->execute($objStatment);
 
@@ -153,6 +190,10 @@ abstract class dataset
         if ($pdo instanceof \PDOStatement) {
             $this->arrDbResult = $pdo->fetchAll(\PDO::FETCH_ASSOC);
             $found = count($this->arrDbResult);
+        }
+
+        if ($this->objServiceWorker instanceof serviceWorker && dataset::$isSorting === false) {
+            $this->objServiceWorker->afterQuery($this);
         }
 
         if ($found) {
@@ -284,7 +325,7 @@ abstract class dataset
         $queryConf = new querybuilder($this->table);
 
         if (count($primaryValues)) {
-            $priFields = $this->objTableScheme->getPrimaryFields();
+            $priFields = $this->primaryField;
 
             if (count($primaryValues) != count($priFields)) {
                 trigger_error('The values array is not similar to the primary fields of the table "' . $this->table . '": ' . print_r($priFields, true), E_USER_ERROR);
@@ -295,6 +336,22 @@ abstract class dataset
                 $queryConf->setSort($colName);
             }
         }
+
+        return $this->readDbResult($queryConf->getQuerySelect());
+    }
+
+    /**
+     * get Entry by unique id
+     *
+     * @param string $uniqueId
+     * @return int
+     */
+    public function getUniqueEntry(string $uniqueId)
+    {
+        $queryConf = new querybuilder($this->table);
+
+        $queryConf->setCondition('uniqueid', $uniqueId);
+        $queryConf->setSort('uniqueid');
 
         return $this->readDbResult($queryConf->getQuerySelect());
     }
@@ -333,7 +390,7 @@ abstract class dataset
      */
     public function getPrimaryFields()
     {
-        return $this->objTableScheme->getPrimaryFields();
+        return $this->primaryField;
     }
 
     public function getRecord2Array(): array
@@ -351,15 +408,27 @@ abstract class dataset
     {
         $tmpObj = clone $this;
 
+        $queryMode = 'update';
+
         if (trim($this->uniqueid->getVal()) === '') {
+            $queryMode = 'create';
             $this->uniqueid->setVal(\uniqid('', false));
         }
 
-        $priFields = $this->objTableScheme->getPrimaryFields();
-
         $arrPVal = [];
-        foreach ($priFields as $colName) {
+        foreach ($this->primaryField as $colName) {
             $arrPVal[] = $this->{$colName}->getVal();
+        }
+
+        if (isset($this->objServiceWorker) && dataset::$isSorting === false) {
+            switch ($queryMode) {
+                case 'update':
+                    $this->objServiceWorker->beforeUpdate($this);
+                    break;
+                case 'create':
+                    $this->objServiceWorker->beforeCreate($this);
+                    break;
+            }
         }
 
         $queryConf = new querybuilder($this->table);
@@ -377,18 +446,12 @@ abstract class dataset
                 $arrPVal[$colName] = $this->{$colName}->getVal();
             }
 
-            if ($this->objTableScheme->isAutoincrement()) {
-                foreach ($priFields as $colName) {
-                    unset($arrPVal[$colName]);
-                }
-            }
-
             $queryConf->getQueryInsert($arrPVal);
 
             database::getQuery()->execute($queryConf->getQueryInsert($arrPVal));
 
-            if ($this->objTableScheme->isAutoincrement()) {
-                $this->{$priFields[0]}->setVal(query::$lastId);
+            if ($this->autoIncrementField !== '') {
+                $this->{$this->autoIncrementField}->setVal(query::$lastId);
             }
         } else {
             $arrPVal = [];
@@ -396,7 +459,7 @@ abstract class dataset
                 $arrPVal[$colName] = $this->{$colName}->getVal();
             }
 
-            foreach ($priFields as $key => $colName) {
+            foreach ($this->primaryField as $key => $colName) {
                 $queryConf->setCondition($colName, $this->{$colName}->getVal());
                 $queryConf->setSort($colName);
             }
@@ -404,8 +467,20 @@ abstract class dataset
             database::getQuery()->execute($queryConf->getQueryUpdate($arrPVal));
         }
 
+        if (isset($this->objServiceWorker) && dataset::$isSorting === false) {
+            switch ($queryMode) {
+                case 'update':
+                    $this->objServiceWorker->afterUpdate($this);
+                    break;
+                case 'create':
+                    $this->objServiceWorker->afterCreate($this);
+                    break;
+            }
+        }
+
         if (trim($sortField) !== '' && $noSort !== true) {
             $start_sort = true;
+            dataset::$isSorting = true;
 
             $sortFunkt = $this->objSorting->getListFunction();
             if (!method_exists($this, $this->objSorting->getListFunction())) {
@@ -509,15 +584,32 @@ abstract class dataset
 
     public function delete()
     {
-        $queryConf = new querybuilder($this->table);
-        $priFields = $this->objTableScheme->getPrimaryFields();
+        if ($this->objServiceWorker instanceof serviceWorker) {
+            $this->objServiceWorker->beforeDelete($this);
+        }
 
-        foreach ($priFields as $key => $colName) {
+        $queryConf = new querybuilder($this->table);
+
+        foreach ($this->primaryField as $key => $colName) {
             $queryConf->setCondition($colName, $this->{$colName}->getVal());
             $queryConf->setSort($colName);
         }
 
-        database::getQuery()->execute($queryConf->getQueryDelete());
+        if ((new db())->getHardDelete()) {
+            database::getQuery()->execute($queryConf->getQueryDelete());
+        } else {
+            dataset::$isSorting = true;
+
+            $this->deleted->setVal(\time());
+            $this->save(true);
+
+            dataset::$isSorting = false;
+        }
+
+
+        if ($this->objServiceWorker instanceof serviceWorker) {
+            $this->objServiceWorker->afterDelete($this);
+        }
 
         $this->clearFields();
     }

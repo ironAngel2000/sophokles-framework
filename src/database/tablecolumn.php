@@ -161,7 +161,7 @@ class tablecolumn
                 $statement .= ' JSON';
                 break;
             case FieldType::TEXT:
-                $statement .= ' TEXT';
+                $statement .= ' TEXT DEFAULT NULL ';
                 break;
             case FieldType::ENUM:
                 $statement .= ' ' . $this->enumStatement();
