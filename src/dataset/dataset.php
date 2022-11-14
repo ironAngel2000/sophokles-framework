@@ -73,21 +73,25 @@ abstract class dataset
             $this->databasenr = 1;
         }
 
+        $this->objTableScheme = new tablescheme($this->table);
         $this->objSorting = new sorting();
         $this->initClass();
 
-        $this->__init();
+
+        $this->defineSorting();
+        $this->defineTableScheme();
 
         if(method_exists($this,'abstractInit')){
             $this->abstractInit();
         }
 
+        $this->__init();
+
     }
 
     private function __init(): void
     {
-        $this->defineSorting();
-        $this->defineTableScheme();
+
         if ($this->objTableScheme instanceof tablescheme) {
             $arrCols = $this->objTableScheme->getColumns();
             if (count($arrCols)) {
@@ -120,6 +124,7 @@ abstract class dataset
                         } elseif ($objColumn->isPrimary()) {
                             $this->primaryField[] = $name;
                         }
+
                     }
                 }
             }

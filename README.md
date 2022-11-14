@@ -38,6 +38,16 @@ with the follow call in your Browser this directories and files will be created
 ## Models
 ### Create database models
 ```php
+/**
+* @property typeInt $id,
+* @property typeInt $refField,
+* @property typeInt $order,
+* @property typeText $name,
+* @property typeFloat $amount,
+* @property typeText $description,
+* @property typeText $created,
+* @property typeInt $updated,
+*/
 class MyModel extends dataset
 {
     
@@ -45,7 +55,7 @@ class MyModel extends dataset
 
     protected function defineTableScheme()
     {
-        $schema = new tablescheme($this->table);
+        $schema  = & $this->objTableScheme;
         $schema->addColumn('id', FieldType::INT)
             ->length(11)
             ->autoincrement() // for Autoincrement use onlie INT or BIGINT
@@ -75,7 +85,6 @@ class MyModel extends dataset
 
         $schema->addKey(['refField', 'order'], false);
 
-        $this->objTableScheme = $schema;
     }
 
     protected function defineSorting()
