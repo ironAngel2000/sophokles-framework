@@ -172,6 +172,25 @@ abstract class dataset
         $this->tabele = $newTablename;
     }
 
+    public function toArray(): array
+    {
+        $ret = [];
+
+        if ($this->objTableScheme instanceof tablescheme) {
+            $arrCols = $this->objTableScheme->getColumns();
+            if (count($arrCols)) {
+                foreach ($arrCols as $objColumn) {
+                    if ($objColumn instanceof tablecolumn) {
+                        $name = $objColumn->columnName();
+                        $ret[$name] = $this->{$name}->getVal();
+                    }
+                }
+            }
+        }
+
+        return $ret;
+    }
+
     /**
      * Select new Database for the abstract module.
      *
