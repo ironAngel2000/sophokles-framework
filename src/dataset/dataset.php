@@ -81,7 +81,7 @@ abstract class dataset
         $this->defineSorting();
         $this->defineTableScheme();
 
-        if(method_exists($this,'abstractInit')){
+        if (method_exists($this, 'abstractInit')) {
             $this->abstractInit();
         }
 
@@ -227,6 +227,23 @@ abstract class dataset
         }
 
         return $found;
+    }
+
+    protected function executeDeletion(querybuilder $objQuerybuilder, bool $forceHardDelete = false): void
+    {
+        if ((new db())->getHardDelete() || $forceHardDelete) {
+            database::getQuery()->execute($objQuerybuilder->getQueryDelete());
+        } else {
+
+            $tmpObj = clone $this;
+            if ($tmpObj->readDbResult($objQuerybuilder->getQuerySelect())) {
+                do {
+                    $tmpObj->delete();
+                } while ($tmpObj->moveNext());
+            }
+
+        }
+
     }
 
     private function writeDataSetRowtoFields()
