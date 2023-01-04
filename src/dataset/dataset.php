@@ -8,6 +8,7 @@
 
 namespace Sophokles\Dataset;
 
+use GraphQL\Type\Definition\Type;
 use Sophokles\Database\FieldType;
 use Sophokles\Database\querybuilder;
 use Sophokles\Database\database;
@@ -18,8 +19,8 @@ use Sophokles\Database\query;
 use System\Config\db;
 
 /**
- * @property typeText $uniqueid
- * @property typeInt $deleted
+ * @property string $uniqueid
+ * @property integer $deleted
  */
 abstract class dataset
 {
@@ -52,6 +53,9 @@ abstract class dataset
 
     /** @var array */
     protected $primaryField = [];
+
+    /** @var array */
+    protected $cols = [];
 
     abstract protected function defineTableScheme();
 
@@ -91,32 +95,16 @@ abstract class dataset
 
     private function __init(): void
     {
-
+        $this->cols = [];
         if ($this->objTableScheme instanceof tablescheme) {
             $arrCols = $this->objTableScheme->getColumns();
             if (count($arrCols)) {
                 foreach ($arrCols as $objColumn) {
                     if ($objColumn instanceof tablecolumn) {
                         $name = $objColumn->columnName();
-                        $type = $objColumn->columnType();
 
-                        switch ($type) {
-                            case FieldType::INT:
-                            case FieldType::BIGINT:
-                            case FieldType::TIMESTAMP:
-                            case FieldType::BIT:
-                                $this->{$name} = new typeInt();
-                                break;
-                            case FieldType::BOOLEAN:
-                                $this->{$name} = new typeBoolean();
-                                break;
-                            case FieldType::JSON:
-                                $this->{$name} = new typeJson();
-                                break;
-                            default:
-                                $this->{$name} = new typeText();
-                                break;
-                        }
+                        $this->cols[$name] = $objColumn->columnType();
+
                         $this->arrFields[] = $name;
                         if ($objColumn->isAutoincrement()) {
                             $this->autoIncrementField = $name;
@@ -129,6 +117,7 @@ abstract class dataset
                 }
             }
         }
+        $this->clearFields();
     }
 
     public function __clone()
@@ -140,12 +129,6 @@ abstract class dataset
             $this->objServiceWorker = clone $this->objServiceWorker;
         }
         $this->objTableScheme = clone $this->objTableScheme;
-
-        foreach ($this->arrFields as $name) {
-            if (is_object($this->{$name})) {
-                $this->{$name} = clone $this->{$name};
-            }
-        }
 
         ++$this->cloneIndex;
     }
@@ -172,7 +155,7 @@ abstract class dataset
         $this->tabele = $newTablename;
     }
 
-    public function toArray(): array
+    protected function getDatasetToArray()
     {
         $ret = [];
 
@@ -182,11 +165,28 @@ abstract class dataset
                 foreach ($arrCols as $objColumn) {
                     if ($objColumn instanceof tablecolumn) {
                         $name = $objColumn->columnName();
-                        $ret[$name] = $this->{$name}->getVal();
+                        $ret[$name] = $this->{$name};
                     }
                 }
             }
         }
+
+        return $ret;
+    }
+
+    public function toArray(bool $completeResult = false): array
+    {
+        if ($completeResult !== true) {
+            return $this->getDatasetToArray();
+        }
+
+        $ret = [];
+
+        $this->moveFirst();
+
+        do {
+            $ret[] = $this->getDatasetToArray();
+        } while ($this->moveNext());
 
         return $ret;
     }
@@ -220,7 +220,7 @@ abstract class dataset
             $this->objServiceWorker->afterQuery($this);
         }
 
-        if ($found) {
+        if ($found > 0) {
             $this->moveFirst();
         } else {
             $this->clearFields();
@@ -253,22 +253,8 @@ abstract class dataset
 
             if (isset($this->arrDbResult[$key][$colName])) {
 
-                $class = get_class($this->{$colName});
+                $this->{$colName} = $this->arrDbResult[$key][$colName];
 
-                if (stristr($class, 'typeText')) {
-                    $this->arrDbResult[$key][$colName] = trim($this->arrDbResult[$key][$colName]);
-                }
-                if (stristr($class, 'typeJson')) {
-                    $this->arrDbResult[$key][$colName] = trim($this->arrDbResult[$key][$colName]);
-                }
-                if (stristr($class, 'typeInt')) {
-                    $this->arrDbResult[$key][$colName] = (int)($this->arrDbResult[$key][$colName]);
-                }
-                if (stristr($class, 'typeFloat')) {
-                    $this->arrDbResult[$key][$colName] = (float)($this->arrDbResult[$key][$colName]);
-                }
-
-                $this->{$colName} = new $class($this->arrDbResult[$key][$colName]);
             }
         }
     }
@@ -344,13 +330,32 @@ abstract class dataset
         }
     }
 
+    public function getDataModel(): array
+    {
+        return $this->cols;
+    }
+
     /**
      * Clear the Values of the current Fields.
      */
     protected function clearFields()
     {
-        foreach ($this->arrFields as $colName) {
-            $this->{$colName}->clearValue();
+        foreach ($this->cols as $col => $type) {
+            switch ($type) {
+                case FieldType::BIT:
+                case FieldType::INT:
+                case FieldType::BIGINT:
+                case FieldType::TIMESTAMP:
+                case FieldType::DECIMAL;
+                    $this->{$col} = 0;
+                    break;
+                case FieldType::BOOLEAN;
+                    $this->{$col} = false;
+                    break;
+                default:
+                    $this->{$col} = '';
+                    break;
+            }
         }
     }
 
@@ -439,7 +444,7 @@ abstract class dataset
         $ret = [];
 
         foreach ($this->objTableScheme->getColumns() as $arrCol) {
-            $ret[$arrCol['n']] = $this->{$arrCol['n']}->getVal();
+            $ret[$arrCol['n']] = $this->{$arrCol['n']};
         }
 
         return $ret;
@@ -451,14 +456,14 @@ abstract class dataset
 
         $queryMode = 'update';
 
-        if (trim($this->uniqueid->getVal()) === '') {
+        if (trim($this->uniqueid) === '') {
             $queryMode = 'create';
-            $this->uniqueid->setVal(\uniqid('', false));
+            $this->uniqueid = \uniqid('', false);
         }
 
         $arrPVal = [];
         foreach ($this->primaryField as $colName) {
-            $arrPVal[] = $this->{$colName}->getVal();
+            $arrPVal[] = $this->{$colName};
         }
 
         if (isset($this->objServiceWorker) && dataset::$isSorting === false) {
@@ -476,15 +481,16 @@ abstract class dataset
 
         $sortField = $this->objSorting->getSortColumn();
         if (trim($sortField) !== '') {
-            if ($this->{$sortField}->getVal() == 0) {
-                $this->{$sortField}->setVal(99999999);
+            if ($this->{$sortField} == 0) {
+                $this->{$sortField} = 99999999;
             }
         }
 
-        if ($tmpObj->getEntries($arrPVal) == 0) {
+
+        if ((int)$tmpObj->getUniqueEntry($this->uniqueid) === 0) {
             $arrPVal = [];
             foreach ($this->arrFields as $colName) {
-                $arrPVal[$colName] = $this->{$colName}->getVal();
+                $arrPVal[$colName] = $this->{$colName};
             }
 
             $queryConf->getQueryInsert($arrPVal);
@@ -492,16 +498,16 @@ abstract class dataset
             database::getQuery()->execute($queryConf->getQueryInsert($arrPVal));
 
             if ($this->autoIncrementField !== '') {
-                $this->{$this->autoIncrementField}->setVal(query::$lastId);
+                $this->{$this->autoIncrementField} = query::$lastId;
             }
         } else {
             $arrPVal = [];
             foreach ($this->arrFields as $colName) {
-                $arrPVal[$colName] = $this->{$colName}->getVal();
+                $arrPVal[$colName] = $this->{$colName};
             }
 
             foreach ($this->primaryField as $key => $colName) {
-                $queryConf->setCondition($colName, $this->{$colName}->getVal());
+                $queryConf->setCondition($colName, $this->{$colName});
                 $queryConf->setSort($colName);
             }
 
@@ -559,7 +565,7 @@ abstract class dataset
             if ($fieldname == null) {
                 $arrParam[] = null;
             } else {
-                $arrParam[] = $this->{$fieldname}->getVal();
+                $arrParam[] = $this->{$fieldname};
             }
         }
 
@@ -572,21 +578,21 @@ abstract class dataset
             do {
                 $isSame = true;
                 foreach ($arrPrimary as $field) {
-                    if ($this->{$field}->getVal() !== $tmpObj->{$field}->getVal()) {
+                    if ($this->{$field} !== $tmpObj->{$field}) {
                         $isSame = false;
                     }
                 }
 
                 if ($isSame == false) {
                     $setReihe = false;
-                    if ($tmpObj->{$sortField}->getVal() >= $this->{$sortField}->getVal()) {
+                    if ($tmpObj->{$sortField} >= $this->{$sortField}) {
                         $setReihe = true;
                     }
 
                     if ($setReihe == true) {
-                        $aktReihe = $tmpObj->{$sortField}->getVal();
+                        $aktReihe = $tmpObj->{$sortField};
                         ++$aktReihe;
-                        $tmpObj->{$sortField}->setVal($aktReihe);
+                        $tmpObj->{$sortField} = $aktReihe;
                         $tmpObj->save(true);
                     }
                 }
@@ -604,19 +610,19 @@ abstract class dataset
             //*
             do {
                 ++$aktR;
-                $tmpObj->{$sortField}->setVal($aktR);
+                $tmpObj->{$sortField} = $aktR;
                 $tmpObj->save(true);
 
                 $isSame = true;
                 foreach ($arrPrimary as $field) {
-                    if ($this->{$field}->getVal() !== $tmpObj->{$field}->getVal()) {
+                    if ($this->{$field} !== $tmpObj->{$field}) {
                         $isSame = false;
                     }
                 }
 
                 if ($isSame == true) {
-                    $aktReihe = $tmpObj->{$sortField}->getVal();
-                    $this->{$sortField}->setVal($aktReihe);
+                    $aktReihe = $tmpObj->{$sortField};
+                    $this->{$sortField} = $aktReihe;
                 }
             } while ($tmpObj->moveNext());
             //*/
@@ -632,7 +638,7 @@ abstract class dataset
         $queryConf = new querybuilder($this->table);
 
         foreach ($this->primaryField as $key => $colName) {
-            $queryConf->setCondition($colName, $this->{$colName}->getVal());
+            $queryConf->setCondition($colName, $this->{$colName});
             $queryConf->setSort($colName);
         }
 
@@ -641,7 +647,7 @@ abstract class dataset
         } else {
             dataset::$isSorting = true;
 
-            $this->deleted->setVal(\time());
+            $this->deleted = \time();
             $this->save(true);
 
             dataset::$isSorting = false;

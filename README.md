@@ -39,14 +39,14 @@ with the follow call in your Browser this directories and files will be created
 ### Create database models
 ```php
 /**
-* @property typeInt $id,
-* @property typeInt $refField,
-* @property typeInt $order,
-* @property typeText $name,
-* @property typeFloat $amount,
-* @property typeText $description,
-* @property typeText $created,
-* @property typeInt $updated,
+* @property integer $id,
+* @property integer $refField,
+* @property integer $order,
+* @property string $name,
+* @property float $amount,
+* @property string $description,
+* @property string $created,
+* @property integer $updated,
 */
 class MyModel extends dataset
 {

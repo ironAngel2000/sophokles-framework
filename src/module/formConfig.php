@@ -126,10 +126,10 @@ class formConfig
                 if ($dataset->{$objField->getColumn()} instanceof typeJson) {
                     $val = $dataset->{$objField->getColumn()}->getFieldVal($objField->getJsonAdress());
                 } else {
-                    $val = (new typeJson($dataset->{$objField->getColumn()}->getVal()))->getFieldVal($objField->getJsonAdress());
+                    $val = (new typeJson($dataset->{$objField->getColumn()}))->getFieldVal($objField->getJsonAdress());
                 }
             } else {
-                $val = $dataset->{$objField->getColumn()}->getVal();
+                $val = $dataset->{$objField->getColumn()};
             }
         }
 
@@ -188,7 +188,7 @@ class formConfig
                 $row['description'] = $objField->getDescription();
                 $row['type'] = 'form-'.$objField->getType();
                 $row['required'] = $objField->getRequired();
-                $checkVal = $dataset->{$pField}->getVal();
+                $checkVal = $dataset->{$pField};
                 if(trim($objField->getReferenceValue())!==''){
                     $checkVal = (int) trim($objField->getReferenceValue());
                 }
@@ -344,7 +344,7 @@ class formConfig
                 if (is_array($objField->getJsonAdress()) && count($objField->getJsonAdress()) > 0) {
                     $dataset->{$objField->getColumn()}->setFieldVal($objField->getJsonAdress(), $saveVal);
                 } else {
-                    $dataset->{$objField->getColumn()}->setVal($saveVal);
+                    $dataset->{$objField->getColumn()} = $saveVal;
                 }
 
                 break;
@@ -368,10 +368,10 @@ class formConfig
                             $dataset->{$objField->getColumn()}->setFieldVal($adr2, $_POST[$formName.'_2']);
                         }
                         elseif($dataset->{$objField->getColumn()} instanceof typeText){
-                            $objJson = new typeJson($dataset->{$objField->getColumn()}->getVal());
+                            $objJson = new typeJson($dataset->{$objField->getColumn()});
                             $objJson->setFieldVal($adr1, $_POST[$formName.'_1']);
                             $objJson->setFieldVal($adr2, $_POST[$formName.'_2']);
-                            $dataset->{$objField->getColumn()}->setVal($objJson->getJsonString());
+                            $dataset->{$objField->getColumn()} = $objJson->getJsonString();
                         }
                     } elseif($dataset->{$objField->getColumn()} instanceof typeText){
 
@@ -381,10 +381,10 @@ class formConfig
                         $adr2 = [];
                         $adr2[] = '2';
 
-                        $objJson = new typeJson($dataset->{$objField->getColumn()}->getVal());
+                        $objJson = new typeJson($dataset->{$objField->getColumn()});
                         $objJson->setFieldVal($adr1, $_POST[$formName.'_1']);
                         $objJson->setFieldVal($adr2, $_POST[$formName.'_2']);
-                        $dataset->{$objField->getColumn()}->setVal($objJson->getJsonString());
+                        $dataset->{$objField->getColumn()} = $objJson->getJsonString();
                     }
 
 
@@ -397,12 +397,12 @@ class formConfig
                             $dataset->{$objField->getColumn()}->setFieldVal($objField->getJsonAdress(), $_POST[$formName]);
                         }
                         elseif($dataset->{$objField->getColumn()} instanceof typeText){
-                            $objJson = new typeJson($dataset->{$objField->getColumn()}->getVal());
+                            $objJson = new typeJson($dataset->{$objField->getColumn()});
                             $objJson->setFieldVal($objField->getJsonAdress(), $_POST[$formName]);
-                            $dataset->{$objField->getColumn()}->setVal($objJson->getJsonString());
+                            $dataset->{$objField->getColumn()} = $objJson->getJsonString();
                         }
                     } else {
-                        $dataset->{$objField->getColumn()}->setVal($_POST[$formName]);
+                        $dataset->{$objField->getColumn()} = $_POST[$formName];
                     }
                 }
                 else{

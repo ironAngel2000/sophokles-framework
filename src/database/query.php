@@ -32,7 +32,7 @@ class query
     public function __construct($dbNr = 1)
     {
         if ($dbNr !== 1) {
-            $class = '\System\Config\db'.$dbNr.'.php';
+            $class = '\System\Config\db' . $dbNr . '.php';
             $objConfig = new $class();
         } else {
             $objConfig = new \System\Config\db();
@@ -43,13 +43,13 @@ class query
 
         $this->dbConfig = &$objConfig;
 
-        $dsn = 'mysql:host='.$this->dbConfig->getHost().';';
+        $dsn = 'mysql:host=' . $this->dbConfig->getHost() . ';';
         if (trim($this->dbConfig->getSocket()) !== '') {
-            $dsn .= 'port='.$this->dbConfig->getSocket().';';
+            $dsn .= 'port=' . $this->dbConfig->getSocket() . ';';
         } else {
-            $dsn .= 'port='.$this->dbConfig->getPort().';';
+            $dsn .= 'port=' . $this->dbConfig->getPort() . ';';
         }
-        $dsn .= 'dbname='.$this->dbConfig->getDatabase().'';
+        $dsn .= 'dbname=' . $this->dbConfig->getDatabase() . '';
 
         $this->dbCon = new PDO($dsn, $this->dbConfig->getUser(), $this->dbConfig->getPassword(), array(PDO::ATTR_PERSISTENT => false));
         $this->dbCon->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
@@ -58,7 +58,7 @@ class query
     /**
      * Datenbankabfrage in der Datenbank ausfuehren.
      *
-     * @param statement $objStatement'INT(11) NOT NULL DEFAULT \'0\''
+     * @param statement $objStatement 'INT(11) NOT NULL DEFAULT \'0\''
      *
      * @return PDOStatement
      */
@@ -80,21 +80,23 @@ class query
                 foreach ($objStatement->getArguments() as $col => $value) {
                     switch (gettype($value)) {
                         case 'integer':
-                            $stmt->bindParam(':'.$col, $arrStatement[$col], PDO::PARAM_INT);
+                            $stmt->bindParam(':' . $col, $arrStatement[$col], PDO::PARAM_INT);
                             break;
                         default:
-                            $stmt->bindParam(':'.$col, $arrStatement[$col]);
+                            $stmt->bindParam(':' . $col, $arrStatement[$col]);
                             break;
                     }
                 }
+
             }
 
             $stmt->execute();
             $ret = $stmt;
         } catch (PDOException $e) {
-
-            $failure = sprintf('Invalid query: %s', $e->errorInfo[2])."\r\n";
+            $failure = sprintf('Invalid query: %s', $e->errorInfo[2]) . "\r\n";
             trigger_error($failure, E_USER_ERROR);
+        } catch (\Exception $e) {
+            trigger_error($e, E_USER_ERROR);
         }
 
         if (query::getDebugMode()) {

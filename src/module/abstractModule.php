@@ -186,7 +186,7 @@ abstract class abstractModule
                         $chParam = [];
                         foreach ($this->parentFields as $keyNr => $colName) {
                             $prColName = $this->objDataset->getPrimaryFields()[$keyNr];
-                            $chParam[$colName] = $this->objDataset->{$prColName}->getVal();
+                            $chParam[$colName] = $this->objDataset->{$prColName};
                         }
 
                         $childs = $recursObj->getReferenceList($chParam, $arrSort);
@@ -216,11 +216,11 @@ abstract class abstractModule
         $recursObj = clone $this->objDataset;
         $pid = $checkId;
         while ((int)$pid != 0 && $ret == false) {
-            if ((int)$pid == ((int) $this->objDataset->ref_id->getVal())) {
+            if ((int)$pid == ((int) $this->objDataset->ref_id)) {
                 $ret = true;
             } else {
                 $recursObj->getEntries([$pid]);
-                $pid = $recursObj->ref_id->getVal();
+                $pid = $recursObj->ref_id;
             }
         }
 
