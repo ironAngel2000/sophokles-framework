@@ -558,7 +558,16 @@ abstract class dataset
 
     private function sort_position()
     {
-        $tmpObj = clone $this;
+        $sortField = $this->objSorting->getSortColumn();
+        $listFunction = $this->objSorting->getListFunction();
+
+        if (trim($sortField) === '') {
+            return;
+        }
+
+        if (trim($listFunction) === '' || !method_exists($this, $listFunction)) {
+            return;
+        }
 
         $arrParam = [];
         foreach ($this->objSorting->getReferenceColumns() as $fieldname) {
@@ -569,32 +578,20 @@ abstract class dataset
             }
         }
 
-        $sortField = $this->objSorting->getSortColumn();
-        $arrPrimary = $this->objTableScheme->getPrimaryFields();
+        $tmpObj = clone $this;
 
-        $arrFunkt = array($tmpObj, $this->objSorting->getListFunction());
-
-        if (call_user_func_array($arrFunkt, $arrParam)) {
+        if ($tmpObj->{$listFunction}(...$arrParam)) {
             do {
-                $isSame = true;
-                foreach ($arrPrimary as $field) {
-                    if ($this->{$field} !== $tmpObj->{$field}) {
-                        $isSame = false;
-                    }
+                $isSame = false;
+                if ($tmpObj->uniqueid !== $this->uniqueid) {
+                    $isSame = true;
                 }
 
-                if ($isSame == false) {
-                    $setReihe = false;
-                    if ($tmpObj->{$sortField} >= $this->{$sortField}) {
-                        $setReihe = true;
-                    }
-
-                    if ($setReihe == true) {
-                        $aktReihe = $tmpObj->{$sortField};
-                        ++$aktReihe;
-                        $tmpObj->{$sortField} = $aktReihe;
-                        $tmpObj->save(true);
-                    }
+                if($isSame == false && $tmpObj->{$sortField} >= $this->{$sortField}) {
+                    $aktReihe = $tmpObj->{$sortField};
+                    ++$aktReihe;
+                    $tmpObj->{$sortField} = $aktReihe;
+                    $tmpObj->save(true);
                 }
             } while ($tmpObj->moveNext());
         }
@@ -603,29 +600,23 @@ abstract class dataset
 
         $tmpObj = clone $this;
 
-        $arrFunkt = array($tmpObj, $this->objSorting->getListFunction());
-
-        if (call_user_func_array($arrFunkt, $arrParam)) {
+        if ($tmpObj->{$listFunction}(...$arrParam)) {
             $aktR = 0;
-            //*
             do {
+                $isSame = false;
+                if ($tmpObj->uniqueid !== $this->uniqueid) {
+                    $isSame = true;
+                }
+
                 ++$aktR;
                 $tmpObj->{$sortField} = $aktR;
                 $tmpObj->save(true);
 
-                $isSame = true;
-                foreach ($arrPrimary as $field) {
-                    if ($this->{$field} !== $tmpObj->{$field}) {
-                        $isSame = false;
-                    }
+                if($isSame === true) {
+                    $this->{$sortField} == $aktR;
                 }
 
-                if ($isSame == true) {
-                    $aktReihe = $tmpObj->{$sortField};
-                    $this->{$sortField} = $aktReihe;
-                }
             } while ($tmpObj->moveNext());
-            //*/
         }
     }
 
