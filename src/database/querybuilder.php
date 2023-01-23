@@ -190,13 +190,14 @@ class querybuilder
      * @param string $conector
      * @return self
      */
-    public function setInselectCondition($column, querybuilder $objBuilder, string $conector = 'AND')
+    public function setInselectCondition($column, querybuilder $objBuilder, string $refColumn, string $conector = 'AND')
     {
         $newCond = [];
         $newCond['type'] = 'inselect';
         $newCond['col'] = $column;
         $newCond['objBuild'] = $objBuilder;
         $newCond['conector'] = $conector;
+        $newCond['refCol'] = $refColumn;
 
         $this->condition[$this->condIndex][] = $newCond;
 
@@ -513,6 +514,7 @@ class querybuilder
 
                             break;
                         case 'inselect':
+                            $arrBedinung['objBuild']->setDistinctColumn($arrBedinung['refCol']);
                             $statment = $arrBedinung['objBuild']->getQuerySelect();
                             $ret .= "`" . $arrBedinung['col'] . "` IN (" . $statment->getStatment() . ") ";
 

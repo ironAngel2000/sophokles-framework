@@ -330,6 +330,11 @@ abstract class dataset
         }
     }
 
+    final public function getTable(): string
+    {
+        return  $this->table;
+    }
+
     public function getDataModel(): array
     {
         return $this->cols;
